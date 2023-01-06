@@ -7,17 +7,17 @@ import (
 
 func WriteCSV(w io.Writer, sds []*Drain) error {
 	var records [][]string
-
+	records = append(records, []string{"Org", "Space", "Bound App Name", "Drain Name", "Drain URL", "Drain GUID", "Drain Service Last Operation"})
 	for _, sd := range sds {
 		for _, a := range sd.Apps {
 			r := []string{
-				sd.GUID,
+				sd.Organization.Name,
+				sd.Space.Name,
+				a.Name,
 				sd.Name,
 				sd.URL,
+				sd.GUID,
 				sd.LastOperation.State,
-				a.Name,
-				sd.Space.Name,
-				sd.Organization.Name,
 			}
 			records = append(records, r)
 		}
