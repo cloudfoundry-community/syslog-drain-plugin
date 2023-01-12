@@ -12,7 +12,11 @@ func ListSpaceSyslogDrains(cliConnection plugin.CliConnection, log Logger, w io.
 	if err != nil {
 		return err
 	}
-	l := syslog.NewDrainLister(cf, log)
+	cf2, err := createCFv2Client(cliConnection)
+	if err != nil {
+		return err
+	}
+	l := syslog.NewDrainLister(cf, cf2, log)
 
 	s, err := cliConnection.GetCurrentSpace()
 	if err != nil {

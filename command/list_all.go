@@ -12,7 +12,11 @@ func ListSyslogDrains(cliConnection plugin.CliConnection, log Logger, w io.Write
 	if err != nil {
 		return err
 	}
-	l := syslog.NewDrainLister(cf, log)
+	cf2, err := createCFv2Client(cliConnection)
+	if err != nil {
+		return err
+	}
+	l := syslog.NewDrainLister(cf, cf2, log)
 
 	sds, err := l.ListSyslogDrains(context.Background())
 	if err != nil {

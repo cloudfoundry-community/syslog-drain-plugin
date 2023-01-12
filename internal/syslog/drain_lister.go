@@ -2,18 +2,23 @@ package syslog
 
 import (
 	"context"
+	"fmt"
+	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	"net/url"
 )
 
 type DrainLister struct {
 	cf  *client.Client
+	cf2 *cfclient.Client
 	log Logger
 }
 
-func NewDrainLister(cf *client.Client, log Logger) *DrainLister {
+func NewDrainLister(cf *client.Client, cf2 *cfclient.Client, log Logger) *DrainLister {
 	return &DrainLister{
 		cf:  cf,
+		cf2: cf2,
 		log: log,
 	}
 }
@@ -117,24 +122,19 @@ func (c *DrainLister) ListSpaceSyslogDrains(ctx context.Context, spaceGUID strin
 func (c *DrainLister) listApps(ctx context.Context, si *resource.ServiceInstance) ([]*resource.App, error) {
 	var apps []*resource.App
 
-	opts := client.NewServiceCredentialBindingListOptions()
-	opts.ServiceInstanceGUIDs.EqualTo(si.GUID)
-	for {
-		sbs, pager, err := c.cf.ServiceCredentialBindings.List(ctx, opts)
+	q := url.Values{}
+	q.Set("results-per-page", "100")
+	q.Set("q", fmt.Sprintf("service_instance_guid:%s", si.GUID))
+	sbs, err := c.cf2.ListServiceBindingsByQuery(q)
+	if err != nil {
+		return nil, err
+	}
+	for _, sb := range sbs {
+		app, err := c.cf.Applications.Get(ctx, sb.AppGuid)
 		if err != nil {
 			return nil, err
 		}
-		for _, sb := range sbs {
-			app, err := c.cf.Applications.Get(ctx, sb.Relationships.App.Data.GUID)
-			if err != nil {
-				return nil, err
-			}
-			apps = append(apps, app)
-		}
-		if !pager.HasNextPage() {
-			break
-		}
-		pager.NextPage(opts)
+		apps = append(apps, app)
 	}
 
 	return apps, nil
