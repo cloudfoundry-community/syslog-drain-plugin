@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	code.cloudfoundry.org/cli v7.1.0+incompatible
-	github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.3
+	github.com/cloudfoundry-community/go-cfclient/v3 v3.0.0-alpha.4
 )
 
 require (
@@ -21,9 +21,11 @@ require (
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/oauth2 v0.4.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

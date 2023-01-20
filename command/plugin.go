@@ -1,9 +1,10 @@
 package command
 
 import (
+	"code.cloudfoundry.org/cli/cf/flags"
 	"code.cloudfoundry.org/cli/plugin"
 	"fmt"
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -24,21 +25,21 @@ type SyslogDrainPlugin struct{}
 // user facing errors). The CLI will exit 0 if the plugin exits 0 and will exit
 // 1 should the plugin exits nonzero.
 func (c *SyslogDrainPlugin) Run(cliConnection plugin.CliConnection, args []string) {
-	l := log.New(os.Stderr, "", 0)
+	l := newLogger(args)
 	switch args[0] {
 	case "list-syslog-drains":
 		err := ListSyslogDrains(cliConnection, l, os.Stdout)
-		handleIfErr(err)
+		handleIfErr(l, err)
 	case "list-org-syslog-drains":
 		err := ListOrgSyslogDrains(cliConnection, l, os.Stdout)
-		handleIfErr(err)
+		handleIfErr(l, err)
 	case "list-space-syslog-drains":
 		err := ListSpaceSyslogDrains(cliConnection, l, os.Stdout)
-		handleIfErr(err)
+		handleIfErr(l, err)
 	case "CLI-MESSAGE-UNINSTALL":
 		os.Exit(0)
 	default:
-		fmt.Printf("unsupported command %s\n", args[0])
+		l.Fatalf("unsupported command %s\n", args[0])
 		os.Exit(1)
 	}
 }
@@ -94,9 +95,28 @@ func (c *SyslogDrainPlugin) GetMetadata() plugin.PluginMetadata {
 	}
 }
 
-func handleIfErr(err error) {
+func newLogger(args []string) *logrus.Logger {
+	fc := flags.New()
+	fc.NewBoolFlag("debug", "d", "Debug logging enabled")
+	err := fc.Parse(args...)
 	if err != nil {
-		fmt.Print(err)
+		_, _ = fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	l := logrus.New()
+	isDebug := fc.IsSet("debug") || len(os.Getenv("CF_TRACE")) > 0
+	if isDebug {
+		l.SetLevel(logrus.DebugLevel)
+	} else {
+		l.SetLevel(logrus.FatalLevel)
+	}
+	return l
+}
+
+func handleIfErr(l *logrus.Logger, err error) {
+	if err != nil {
+		l.Fatal(err)
 		os.Exit(1)
 	}
 }
