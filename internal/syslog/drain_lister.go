@@ -183,8 +183,8 @@ func (c *DrainLister) debugPrintResults(drains []*Drain) {
 
 	for _, drain := range drains {
 		appCount += len(drain.Apps)
-		spaces[drain.Space.Name] = drain.Space
-		orgs[drain.Organization.Name] = drain.Organization
+		spaces[drain.Space.GUID] = drain.Space
+		orgs[drain.Organization.GUID] = drain.Organization
 	}
 
 	c.log.Debugf("Found a total of %d syslog drains", len(drains))
